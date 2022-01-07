@@ -1,1 +1,1 @@
-# empire-core
+# empire/core
