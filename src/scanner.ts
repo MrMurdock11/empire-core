@@ -1,8 +1,13 @@
-import { flatten } from "lodash";
+import { flatten, omit, partial, uniqBy } from "lodash";
 import { MODULE_OPTIONS_METADATA } from "./constants";
 import { Command } from "./models/command";
 import { Module } from "./models/module";
 import { Provider } from "./models/provider";
+import { TDynamicModule } from "./types/dynamic-module.type";
+import {
+	normalizeMetadata,
+	TModuleMetadata,
+} from "./types/module-metadata.type";
 
 export interface IScanner {
 	scan(rootModule: TClassConstruct): void;
@@ -16,6 +21,8 @@ export class Scanner implements IScanner {
 	private _module: Module;
 
 	private _commands: Command[] = [];
+
+	private _global: Module[] = [];
 
 	public scan(module: TClassConstruct): void {
 		this._module = this.dive(module);
@@ -40,12 +47,23 @@ export class Scanner implements IScanner {
 		}
 
 		// проверить не является ли провайдер экспортируемым.
-		const childrenModules = module.imports;
+		const uniqChildrenModules = uniqBy(
+			[...module.imports, ...this._global],
+			"construct"
+		);
 		const childrenExportableProviders = flatten(
-			childrenModules.map(m => m.providers.filter(p => p.exportable))
+			uniqChildrenModules.map(m => m.providers.filter(p => p.exportable))
 		);
 
-		return childrenExportableProviders.some(p => p.construct === target);
+		const isExportableProvider = childrenExportableProviders.some(
+			p => p.construct === target
+		);
+
+		if (isExportableProvider) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -76,28 +94,35 @@ export class Scanner implements IScanner {
 		return void 0;
 	}
 
-	private dive(module: TClassConstruct): Module {
-		if (!Reflect.hasMetadata(MODULE_OPTIONS_METADATA, module)) {
+	private dive(target: TClassConstruct | TDynamicModule): Module {
+		const isDynamicModule = "construct" in target;
+		const construct = isDynamicModule ? target.construct : target;
+
+		if (!Reflect.hasMetadata(MODULE_OPTIONS_METADATA, construct)) {
 			throw new TypeError(
-				`"${module.constructor.name}" hasn't register into system.`
+				`"${construct.constructor.name}" hasn't register into system.`
 			);
 		}
 
-		const options: TModuleOptions = Reflect.getMetadata(
-			MODULE_OPTIONS_METADATA,
-			module
-		);
+		const options: TModuleMetadata = isDynamicModule
+			? normalizeMetadata(target)
+			: Reflect.getMetadata(MODULE_OPTIONS_METADATA, construct);
 		const imports = options.imports.map(i => this.dive(i));
 		const providers = options.providers.map(
 			p =>
 				new Provider(
-					p,
+					"construct" in p ? p.construct : p,
 					options.exports.some(e => e === p)
 				)
 		);
 		const commands = options.commands.map(c => new Command(c));
 		this._commands = this._commands.concat(commands);
 
-		return new Module(module, imports, commands, providers);
+		const module = new Module(construct, imports, commands, providers);
+		if (module.global) {
+			this._global.push(module);
+		}
+
+		return module;
 	}
 }

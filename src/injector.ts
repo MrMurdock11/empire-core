@@ -1,6 +1,7 @@
 import { Store } from "redux";
 import { IScanner } from "./scanner";
-import { ReduxStore } from "./store/redux-store";
+import { ReduxStoreProvider } from "./store/redux-store.provider";
+import { TProviderFactory } from "./types/provider-factory.type";
 
 export class Injector extends Map<
 	TClassConstruct,
@@ -14,7 +15,7 @@ export class Injector extends Map<
 	}
 
 	private initialize(reduxStore: Store): void {
-		this.set(ReduxStore, new ReduxStore(reduxStore));
+		this.set(ReduxStoreProvider, new ReduxStoreProvider(reduxStore));
 	}
 
 	public resolve = (
@@ -25,23 +26,25 @@ export class Injector extends Map<
 		target: TClassConstruct,
 		parent: TClassConstruct | null = null
 	): TInstanceClass<any> | undefined {
+		const construct = target;
+
 		const canInject =
-			parent !== null && !this._scanner.canInject(target, parent);
+			parent !== null && !this._scanner.canInject(construct, parent);
 		if (canInject) {
 			console.log(
-				`"${target.prototype.constructor.name}" couldn't resolve.`
+				`"${construct.prototype.constructor.name}" couldn't resolve.`
 			);
 			return void 0;
 		}
 
-		const resolvedInstance = this.get(target);
+		const resolvedInstance = this.get(construct);
 		if (resolvedInstance) {
 			return resolvedInstance;
 		}
 
-		const injections = this.defineInjections(target);
-		const instance = new target(...injections);
-		this.set(target, instance);
+		const injections = this.defineInjections(construct);
+		const instance = new construct(...injections);
+		this.set(construct, instance);
 
 		console.log(
 			`DI-Container created instance: "${instance.constructor.name}"`

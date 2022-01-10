@@ -3,7 +3,7 @@ type TClassConstruct<TClass = any> = {
 	new (...args: any[]): TClass;
 };
 type TModuleOptions = {
-	imports: TClassConstruct[];
+	imports: (TClassConstruct | any)[];
 	commands: TClassConstruct[];
 	providers: TClassConstruct[];
 	exports: TClassConstruct[];

@@ -6,7 +6,7 @@ import { Factory, useCommander } from "../factory";
 import { ICommand } from "../interfaces/command.interface";
 import { createStore } from "redux";
 import { AppState, rootReducer } from "./store/index";
-import { ReduxStore } from "../store/redux-store";
+import { ReduxStoreProvider } from "../store/redux-store.provider";
 import { ReduxStoreModule } from "../store/redux-store.module";
 import { setStatus } from "./store/App/App.actions";
 
@@ -31,7 +31,7 @@ class PermissionsModule {}
 class UsersService {
 	constructor(
 		private readonly _permissions: PermissionsService,
-		private readonly _store: ReduxStore<AppState>
+		private readonly _store: ReduxStoreProvider<AppState>
 	) {}
 
 	run = () => {
@@ -60,7 +60,7 @@ class AddUserCommand implements ICommand {
 }
 
 @Module({
-	imports: [PermissionsModule, ReduxStoreModule],
+	imports: [PermissionsModule],
 	commands: [AddUserCommand],
 	providers: [AddUserUseCase, UsersService],
 })
@@ -91,10 +91,13 @@ class GraphsModule {}
 
 // #endregion
 
-@Module({ imports: [UsersModule, GraphsModule] })
+const store = createStore(rootReducer);
+
+@Module({
+	imports: [UsersModule, GraphsModule, ReduxStoreModule.forRoot({ store })],
+})
 class AppModule {}
 
-const store = createStore(rootReducer);
 Factory.create(AppModule, store);
 
 const { commander } = useCommander();
