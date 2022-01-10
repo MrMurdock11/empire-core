@@ -1,7 +1,5 @@
-import { Store } from "redux";
+import { ProviderFactory } from "./models/provider-factory";
 import { IScanner } from "./scanner";
-import { ReduxStoreProvider } from "./store/redux-store.provider";
-import { TProviderFactory } from "./types/provider-factory.type";
 
 export class Injector extends Map<
 	TClassConstruct,
@@ -9,13 +7,8 @@ export class Injector extends Map<
 > {
 	private readonly paramTypes = "design:paramtypes";
 
-	constructor(private readonly _scanner: IScanner, store: Store) {
+	constructor(private readonly _scanner: IScanner) {
 		super();
-		this.initialize(store);
-	}
-
-	private initialize(reduxStore: Store): void {
-		this.set(ReduxStoreProvider, new ReduxStoreProvider(reduxStore));
 	}
 
 	public resolve = (
@@ -42,9 +35,15 @@ export class Injector extends Map<
 			return resolvedInstance;
 		}
 
-		const injections = this.defineInjections(construct);
-		const instance = new construct(...injections);
-		this.set(construct, instance);
+		const provider = this._scanner.findProvider(construct);
+		let instance;
+		if (provider instanceof ProviderFactory) {
+			instance = provider.useFactory();
+		} else {
+			const injections = this.defineInjections(construct);
+			instance = new construct(...injections);
+			this.set(construct, instance);
+		}
 
 		console.log(
 			`DI-Container created instance: "${instance.constructor.name}"`

@@ -1,6 +1,7 @@
 import { GLOBAL_METADATA, MODULE_OPTIONS_METADATA } from "../constants";
 import { Command } from "./command";
 import { Provider } from "./provider";
+import { ProviderFactory } from "./provider-factory";
 
 export class Module {
 	public get available(): boolean {
@@ -15,7 +16,7 @@ export class Module {
 		public readonly construct: TClassConstruct,
 		public readonly imports: Module[],
 		public readonly commands: Command[],
-		public readonly providers: Provider[]
+		public readonly providers: (Provider | ProviderFactory)[]
 	) {}
 
 	public has(construct: TClassConstruct): boolean {

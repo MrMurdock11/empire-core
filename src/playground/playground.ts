@@ -35,6 +35,10 @@ class UsersService {
 	) {}
 
 	run = () => {
+		console.log(
+			"permission service is",
+			this._permissions !== undefined ? "exists" : "non exists"
+		);
 		console.log(this._store.state.app.status);
 		this._store.dispatch(setStatus("loading"));
 		console.log(this._store.state.app.status);
@@ -98,7 +102,7 @@ const store = createStore(rootReducer);
 })
 class AppModule {}
 
-Factory.create(AppModule, store);
+Factory.create(AppModule);
 
 const { commander } = useCommander();
 commander.execute<AddUserCommand>(AddUserCommand);

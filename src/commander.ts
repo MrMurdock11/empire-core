@@ -17,7 +17,7 @@ export class Commander {
 	): void;
 	public execute(targetOrToken: string | TClassConstruct, ...args: any[]) {
 		let target: TClassConstruct = isString(targetOrToken)
-			? this._scanner.find(targetOrToken)
+			? this._scanner.findCommandConstruct(targetOrToken)
 			: targetOrToken;
 
 		const hasCommandInstance = this._injector.has(target);

@@ -3,6 +3,7 @@ import { MODULE_OPTIONS_METADATA } from "./constants";
 import { Command } from "./models/command";
 import { Module } from "./models/module";
 import { Provider } from "./models/provider";
+import { ProviderFactory } from "./models/provider-factory";
 import { TDynamicModule } from "./types/dynamic-module.type";
 import {
 	normalizeMetadata,
@@ -12,7 +13,9 @@ import {
 export interface IScanner {
 	scan(rootModule: TClassConstruct): void;
 
-	find(token: string): TClassConstruct;
+	findCommandConstruct(token: string): TClassConstruct;
+
+	findProvider(construct: TClassConstruct): Provider | ProviderFactory;
 
 	canInject(injectable: TClassConstruct, parent: TClassConstruct): boolean;
 }
@@ -28,10 +31,19 @@ export class Scanner implements IScanner {
 		this._module = this.dive(module);
 	}
 
-	public find(token: string): TClassConstruct {
+	public findCommandConstruct(token: string): TClassConstruct {
 		const command = this._commands.find(c => c.token === token);
 
 		return command.construct;
+	}
+
+	public findProvider(
+		construct: TClassConstruct<any>
+	): Provider | ProviderFactory {
+		const module = this.findModule(construct);
+		const provider = module.providers.find(p => p.construct === construct);
+
+		return provider;
 	}
 
 	public canInject(
@@ -73,17 +85,17 @@ export class Scanner implements IScanner {
 	 * хранимый в экземепляре сканера, иначе воспринимает указанный модуль как корневой
 	 * и ищет относительно него.
 	 *
-	 * @param {TClassConstruct} target
-	 * @return {Module}
+	 * @param {TClassConstruct} providerConstruct Конструкт провайдера.
+	 * @return {Module} Модуль в котором содержится провайдер.
 	 * @memberof Scanner
 	 */
-	private findModule(target: TClassConstruct): Module | undefined {
+	private findModule(providerConstruct: TClassConstruct): Module | undefined {
 		let queue = [this._module];
 
 		while (queue.length > 0) {
 			const module = queue.shift();
 
-			const isCorrectModule = module.has(target);
+			const isCorrectModule = module.has(providerConstruct);
 			if (isCorrectModule) {
 				return module;
 			}
@@ -108,12 +120,17 @@ export class Scanner implements IScanner {
 			? normalizeMetadata(target)
 			: Reflect.getMetadata(MODULE_OPTIONS_METADATA, construct);
 		const imports = options.imports.map(i => this.dive(i));
-		const providers = options.providers.map(
-			p =>
-				new Provider(
-					"construct" in p ? p.construct : p,
-					options.exports.some(e => e === p)
-				)
+		const providers = options.providers.map(p =>
+			"construct" in p
+				? new ProviderFactory(
+						p.construct,
+						options.exports.some(e => e === p.construct),
+						p.useFactory
+				  )
+				: new Provider(
+						p,
+						options.exports.some(e => e === p)
+				  )
 		);
 		const commands = options.commands.map(c => new Command(c));
 		this._commands = this._commands.concat(commands);
