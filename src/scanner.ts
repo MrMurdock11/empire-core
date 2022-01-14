@@ -1,13 +1,13 @@
-import { flatten, uniqBy } from "lodash";
+import { flatten, includes, map, uniqBy } from "lodash";
 import { MODULE_OPTIONS_METADATA } from "./constants";
 import { Command } from "./models/command";
 import { Module } from "./models/module";
 import { Provider } from "./models/provider";
-import { TDynamicModule } from "./types/dynamic-module.type";
 import {
 	normalizeMetadata,
 	TModuleMetadata,
 } from "./types/module-metadata.type";
+import { TModuleOptions } from "./types/module-options.type";
 
 export interface IScanner {
 	scan(rootModule: TClassConstruct): void;
@@ -27,7 +27,7 @@ export class Scanner implements IScanner {
 	private _global: Module[] = [];
 
 	public scan(module: TClassConstruct): void {
-		this._module = this.dive(module);
+		this._module = this.buildModuleTree(module);
 	}
 
 	public findCommandConstruct(token: string): TClassConstruct {
@@ -103,8 +103,7 @@ export class Scanner implements IScanner {
 		return void 0;
 	}
 
-	// FIXME: Доработать алгоритм для корректного сканирования.
-	private dive(target: TClassConstruct | TDynamicModule): Module {
+	private dive(target: TClassConstruct | TModuleMetadata): Module {
 		const isDynamicModule = "construct" in target;
 		const construct = isDynamicModule ? target.construct : target;
 
@@ -135,5 +134,30 @@ export class Scanner implements IScanner {
 		}
 
 		return module;
+	}
+
+	private buildModuleTree(moduleConstruct: TClassConstruct): Module {
+		if (!Reflect.hasMetadata(MODULE_OPTIONS_METADATA, moduleConstruct)) {
+			throw new TypeError(
+				`"${moduleConstruct.constructor.name}" hasn't register into system. You use this module but you never define him.`
+			);
+		}
+
+		const options: TModuleMetadata = Reflect.getMetadata(
+			MODULE_OPTIONS_METADATA,
+			moduleConstruct
+		);
+		const imports = map(options.imports, this.buildModuleTree);
+		const providers = map(
+			options.providers,
+			({ construct, useFactory }) =>
+				new Provider(
+					construct,
+					includes(options.exports, construct),
+					useFactory
+				)
+		);
+
+		return new Module(moduleConstruct, imports, [], providers);
 	}
 }
