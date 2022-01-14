@@ -1,9 +1,8 @@
-import { flatten, omit, partial, uniqBy } from "lodash";
+import { flatten, uniqBy } from "lodash";
 import { MODULE_OPTIONS_METADATA } from "./constants";
 import { Command } from "./models/command";
 import { Module } from "./models/module";
 import { Provider } from "./models/provider";
-import { ProviderFactory } from "./models/provider-factory";
 import { TDynamicModule } from "./types/dynamic-module.type";
 import {
 	normalizeMetadata,
@@ -15,7 +14,7 @@ export interface IScanner {
 
 	findCommandConstruct(token: string): TClassConstruct;
 
-	findProvider(construct: TClassConstruct): Provider | ProviderFactory;
+	findProvider(construct: TClassConstruct): Provider;
 
 	canInject(injectable: TClassConstruct, parent: TClassConstruct): boolean;
 }
@@ -37,9 +36,7 @@ export class Scanner implements IScanner {
 		return command.construct;
 	}
 
-	public findProvider(
-		construct: TClassConstruct<any>
-	): Provider | ProviderFactory {
+	public findProvider(construct: TClassConstruct<any>): Provider {
 		const module = this.findModule(construct);
 		const provider = module.providers.find(p => p.construct === construct);
 
@@ -82,7 +79,7 @@ export class Scanner implements IScanner {
 	 * Выполняет поиск родительского модуля для указанного конструкта.
 	 *
 	 * @remark Если не используется `modules`, то метод берет корневой модуль
-	 * хранимый в экземепляре сканера, иначе воспринимает указанный модуль как корневой
+	 * хранимый в экземпляре сканера, иначе воспринимает указанный модуль как корневой
 	 * и ищет относительно него.
 	 *
 	 * @param {TClassConstruct} providerConstruct Конструкт провайдера.
@@ -106,6 +103,7 @@ export class Scanner implements IScanner {
 		return void 0;
 	}
 
+	// FIXME: Доработать алгоритм для корректного сканирования.
 	private dive(target: TClassConstruct | TDynamicModule): Module {
 		const isDynamicModule = "construct" in target;
 		const construct = isDynamicModule ? target.construct : target;
@@ -120,17 +118,13 @@ export class Scanner implements IScanner {
 			? normalizeMetadata(target)
 			: Reflect.getMetadata(MODULE_OPTIONS_METADATA, construct);
 		const imports = options.imports.map(i => this.dive(i));
-		const providers = options.providers.map(p =>
-			"construct" in p
-				? new ProviderFactory(
-						p.construct,
-						options.exports.some(e => e === p.construct),
-						p.useFactory
-				  )
-				: new Provider(
-						p,
-						options.exports.some(e => e === p)
-				  )
+		const providers = options.providers.map(
+			({ construct, useFactory }) =>
+				new Provider(
+					construct,
+					options.exports.some(e => e === construct),
+					useFactory
+				)
 		);
 		const commands = options.commands.map(c => new Command(c));
 		this._commands = this._commands.concat(commands);

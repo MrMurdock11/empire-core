@@ -2,18 +2,17 @@ import { Commander, TUseCommanderHook } from "./commander";
 import { Scanner } from "./scanner";
 import { Injector } from "./injector";
 
-export let useCommander: TUseCommanderHook;
+let commander: Commander | undefined;
+const useCommander: TUseCommanderHook = () => ({ commander });
 
-export class Factory {
+class Factory {
 	public static create(rootModule: TClassConstruct): void {
 		const scanner = new Scanner();
 		scanner.scan(rootModule);
 		const injector = new Injector(scanner);
 
-		const commander = new Commander(injector, scanner);
-
-		useCommander = () => ({
-			commander,
-		});
+		commander = new Commander(injector, scanner);
 	}
 }
+
+export { Factory, useCommander };

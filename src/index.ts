@@ -2,8 +2,9 @@ import "reflect-metadata";
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 
-import { Injectable } from "./decorators/injectable.decorator";
-import { Command } from "./decorators/command.decorator";
-import { Module } from "./decorators/module.decorator";
-
-export { Injectable, Command, Module };
+export * from "./decorators/injectable.decorator";
+export * from "./decorators/command.decorator";
+export * from "./decorators/module.decorator";
+export * from "./factory";
+export * from "./store/redux-store.module";
+export * from "./store/redux-store.provider";

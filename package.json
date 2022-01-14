@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"main": "./index.js",
 	"scripts": {
-		"build": "webpack --mode development && tsc"
+		"build": "webpack --mode development"
 	},
 	"repository": {
 		"type": "git",

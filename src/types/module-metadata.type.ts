@@ -1,9 +1,9 @@
-import { TProviderFactory } from "./provider-factory.type";
+import { TProvider } from "./provider.type";
 
 export type TModuleMetadata = Partial<{
 	imports: TClassConstruct[];
 	commands: TClassConstruct[];
-	providers: (TClassConstruct | TProviderFactory)[];
+	providers: TProvider[];
 	exports: TClassConstruct[];
 }>;
 
