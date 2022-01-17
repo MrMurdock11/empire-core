@@ -12,8 +12,6 @@ import { TModuleOptions } from "./types/module-options.type";
 export interface IScanner {
 	scan(rootModule: TClassConstruct): void;
 
-	findCommandConstruct(token: string): TClassConstruct;
-
 	findProvider(construct: TClassConstruct): Provider;
 
 	canInject(injectable: TClassConstruct, parent: TClassConstruct): boolean;
@@ -28,12 +26,6 @@ export class Scanner implements IScanner {
 
 	public scan(module: TClassConstruct): void {
 		this._module = this.buildModuleTree(module);
-	}
-
-	public findCommandConstruct(token: string): TClassConstruct {
-		const command = this._commands.find(c => c.token === token);
-
-		return command.construct;
 	}
 
 	public findProvider(construct: TClassConstruct<any>): Provider {
@@ -137,6 +129,10 @@ export class Scanner implements IScanner {
 	}
 
 	private buildModuleTree(moduleConstruct: TClassConstruct): Module {
+		if (moduleConstruct === undefined) {
+			throw new TypeError(`Module is undefined`);
+		}
+
 		if (!Reflect.hasMetadata(MODULE_OPTIONS_METADATA, moduleConstruct)) {
 			throw new TypeError(
 				`"${moduleConstruct.constructor.name}" hasn't register into system. You use this module but you never define him.`
@@ -147,7 +143,9 @@ export class Scanner implements IScanner {
 			MODULE_OPTIONS_METADATA,
 			moduleConstruct
 		);
-		const imports = map(options.imports, this.buildModuleTree);
+		const imports = map(options.imports, construct =>
+			this.buildModuleTree(construct)
+		);
 		const providers = map(
 			options.providers,
 			({ construct, useFactory }) =>

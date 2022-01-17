@@ -16,19 +16,16 @@ export class Commander {
 		...args: Parameters<TCommand["execute"]>
 	): void;
 	public execute(targetOrToken: string | TClassConstruct, ...args: any[]) {
-		let target: TClassConstruct = isString(targetOrToken)
-			? this._scanner.findCommandConstruct(targetOrToken)
-			: targetOrToken;
-
-		const hasCommandInstance = this._injector.has(target);
-		const command = hasCommandInstance
-			? this._injector.get(target)
-			: this._injector.resolve(target);
-
-		if (command === undefined) {
-			throw new TypeError("Команда не была определена.");
-		}
-
-		command.execute(...args);
+		// let target: TClassConstruct = isString(targetOrToken)
+		// 	? this._scanner.findCommandConstruct(targetOrToken)
+		// 	: targetOrToken;
+		// const hasCommandInstance = this._injector.has(target);
+		// const command = hasCommandInstance
+		// 	? this._injector.get(target)
+		// 	: this._injector.resolve(target);
+		// if (command === undefined) {
+		// 	throw new TypeError("Команда не была определена.");
+		// }
+		// command.execute(...args);
 	}
 }

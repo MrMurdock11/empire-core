@@ -1,4 +1,3 @@
-import { ProviderFactory } from "./models/provider-factory";
 import { IScanner } from "./scanner";
 
 export class Injector extends Map<
@@ -37,7 +36,7 @@ export class Injector extends Map<
 
 		const provider = this._scanner.findProvider(construct);
 		let instance;
-		if (provider instanceof ProviderFactory) {
+		if (provider.isFactory) {
 			instance = provider.useFactory();
 		} else {
 			const injections = this.defineInjections(construct);

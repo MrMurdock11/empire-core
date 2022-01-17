@@ -3,7 +3,8 @@
 	"version": "1.0.0",
 	"main": "./index.js",
 	"scripts": {
-		"build": "webpack --mode development"
+		"build": "webpack --mode development",
+		"test": "jest"
 	},
 	"repository": {
 		"type": "git",
@@ -21,10 +22,12 @@
 		"@babel/plugin-proposal-decorators": "7.16.4",
 		"@babel/preset-env": "7.16.4",
 		"@babel/preset-typescript": "7.16.0",
+		"@types/jest": "27.4.0",
 		"@types/lodash": "4.14.177",
 		"babel-loader": "8.2.3",
 		"clean-webpack-plugin": "4.0.0",
 		"copy-webpack-plugin": "10.0.0",
+		"ts-jest": "27.1.2",
 		"ts-loader": "9.2.6",
 		"typescript": "4.5.2",
 		"webpack": "5.64.2",
@@ -34,6 +37,7 @@
 	"dependencies": {
 		"core-js": "3.20.1",
 		"inversify": "6.0.1",
+		"jest": "27.4.7",
 		"lodash": "4.17.21",
 		"redux": "4.1.2",
 		"reflect-metadata": "0.1.13",
