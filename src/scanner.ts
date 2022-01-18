@@ -120,7 +120,7 @@ export class Scanner implements IScanner {
 		const commands = options.commands.map(c => new Command(c));
 		this._commands = this._commands.concat(commands);
 
-		const module = new Module(construct, imports, commands, providers);
+		const module = Module.create(construct, imports, providers);
 		if (module.global) {
 			this._global.push(module);
 		}
@@ -156,6 +156,6 @@ export class Scanner implements IScanner {
 				)
 		);
 
-		return new Module(moduleConstruct, imports, [], providers);
+		return Module.create(moduleConstruct, undefined, providers);
 	}
 }

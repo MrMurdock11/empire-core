@@ -1,3 +1,4 @@
+import { v4 } from "uuid";
 import { INJECTABLE_METADATA } from "../constants";
 
 /**
@@ -7,6 +8,15 @@ import { INJECTABLE_METADATA } from "../constants";
  * @class Provider
  */
 export class Provider {
+	/**
+	 * Идентификатор поставщика.
+	 *
+	 * @private
+	 * @type {Uuid}
+	 * @memberof Provider
+	 */
+	private readonly id: Uuid = v4();
+
 	/**
 	 * Получает значение, показывающее, что экземпляр поставщика определяется
 	 * фабричным методом.

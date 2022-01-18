@@ -1,3 +1,5 @@
+import { isEmpty, isNull, isUndefined } from "lodash";
+import { v4 } from "uuid";
 import { GLOBAL_METADATA, MODULE_OPTIONS_METADATA } from "../constants";
 import { Command } from "./command";
 import { Provider } from "./provider";
@@ -10,26 +12,35 @@ import { Provider } from "./provider";
  */
 export class Module {
 	/**
-	 * Получает значение, показывающее, что модуль доступен помечен
-	 * и доступен в системе.
+	 * Идентификатор модуля.
 	 *
-	 * @readonly
+	 * @private
+	 * @type {Uuid}
+	 * @memberof Module
+	 */
+	private readonly id: Uuid = v4();
+
+	/**
+	 * Значение, показывающее, что модуль определена для глобального области.
+	 *
+	 * @private
 	 * @type {boolean}
 	 * @memberof Module
 	 */
-	public get available(): boolean {
-		return Reflect.hasMetadata(MODULE_OPTIONS_METADATA, this.construct);
-	}
+	private _global: boolean;
 
 	/**
-	 * Получает значение, показывающее, что модуль является определен для глобального области.
+	 * Получает значение, показывающее, что модуль определена для глобального области.
 	 *
 	 * @readonly
 	 * @type {boolean}
 	 * @memberof Module
 	 */
 	public get global(): boolean {
-		return Reflect.hasMetadata(GLOBAL_METADATA, this.construct);
+		return (this._global ??= Reflect.hasMetadata(
+			GLOBAL_METADATA,
+			this.construct
+		));
 	}
 
 	/**
@@ -37,16 +48,42 @@ export class Module {
 	 *
 	 * @param {TClassConstruct} construct Конструкт модуля.
 	 * @param {Module[]} imports Импортируемые модули.
-	 * @param {Command[]} commands Команды модуля.
 	 * @param {Provider[]} providers Поставщики модуля.
 	 * @memberof Module
 	 */
-	constructor(
+	private constructor(
 		public readonly construct: TClassConstruct,
 		public readonly imports: Module[],
-		public readonly commands: Command[],
 		public readonly providers: Provider[]
 	) {}
+
+	public static create(
+		construct: TClassConstruct,
+		imports: Module[],
+		providers: Provider[]
+	): Module {
+		if (!Reflect.hasMetadata(MODULE_OPTIONS_METADATA, construct)) {
+			throw new TypeError(
+				`The "${construct.name}" (sub)module didn't define in the system. Use decorator @Module to define your module.`
+			);
+		}
+
+		if (isUndefined(imports) || isNull(imports)) {
+			throw new TypeError(
+				"Imported submodules can't be null or undefined."
+			);
+		}
+
+		if (isEmpty(providers)) {
+			throw new TypeError(
+				"Providers of the module can't be empty or null / undefined."
+			);
+		}
+
+		const module = new Module(construct, imports, providers);
+
+		return module;
+	}
 
 	/**
 	 * Выполняет проверку принадлежности искомого конструкта к модулю.
@@ -56,9 +93,6 @@ export class Module {
 	 * @memberof Module
 	 */
 	public has(construct: TClassConstruct): boolean {
-		return [
-			...this.commands.map(c => c.construct),
-			...this.providers.map(p => p.construct),
-		].includes(construct);
+		return this.providers.map(p => p.construct).includes(construct);
 	}
 }
