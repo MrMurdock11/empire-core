@@ -42,7 +42,7 @@ export class Scanner implements IScanner {
 		const module = this.findModule(parent);
 
 		// проверить является ли провайдер частью родительского модуля.
-		const isProviderOrCommand = module.has(target);
+		const isProviderOrCommand = module.contains(target);
 		if (isProviderOrCommand) {
 			return true;
 		}
@@ -84,7 +84,7 @@ export class Scanner implements IScanner {
 		while (queue.length > 0) {
 			const module = queue.shift();
 
-			const isCorrectModule = module.has(providerConstruct);
+			const isCorrectModule = module.contains(providerConstruct);
 			if (isCorrectModule) {
 				return module;
 			}

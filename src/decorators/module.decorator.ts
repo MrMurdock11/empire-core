@@ -2,7 +2,7 @@ import { MODULE_OPTIONS_METADATA } from "../constants";
 import { TModuleOptions } from "../types/module-options.type";
 
 export const Module =
-	(options: Partial<TModuleOptions>): ClassDecorator =>
+	(options: Partial<TModuleOptions> = {}): ClassDecorator =>
 	target => {
 		const { imports, commands, providers, exports } = options;
 

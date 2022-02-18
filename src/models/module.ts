@@ -1,7 +1,6 @@
-import { isEmpty, isNull, isUndefined } from "lodash";
+import { isNull, isUndefined, some } from "lodash";
 import { v4 } from "uuid";
 import { GLOBAL_METADATA, MODULE_OPTIONS_METADATA } from "../constants";
-import { Command } from "./command";
 import { Provider } from "./provider";
 
 /**
@@ -74,9 +73,9 @@ export class Module {
 			);
 		}
 
-		if (isEmpty(providers)) {
+		if (isUndefined(providers) || isNull(providers)) {
 			throw new TypeError(
-				"Providers of the module can't be empty or null / undefined."
+				"Providers of the module can't be null or undefined."
 			);
 		}
 
@@ -88,11 +87,11 @@ export class Module {
 	/**
 	 * Выполняет проверку принадлежности искомого конструкта к модулю.
 	 *
-	 * @param {TClassConstruct} construct Конструкт.
+	 * @param {TClassConstruct} construct Искомый конструкт.
 	 * @returns {boolean} Значение, показывающее, что конструкт принадлежит данному модулю.
 	 * @memberof Module
 	 */
-	public has(construct: TClassConstruct): boolean {
-		return this.providers.map(p => p.construct).includes(construct);
+	public contains(construct: TClassConstruct): boolean {
+		return some(this.providers, { construct });
 	}
 }
