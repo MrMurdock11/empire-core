@@ -12,12 +12,14 @@ export class Provider {
 	 * Идентификатор поставщика.
 	 *
 	 * @private
-	 * @type {Uuid}
+	 * @type {TUuid}
 	 * @memberof Provider
 	 */
-	private readonly id: Uuid = v4();
+	private readonly id: TUuid = v4();
 
 	/**
+	 * * experimental => DynamicModule
+	 *
 	 * Получает значение, показывающее, что экземпляр поставщика определяется
 	 * фабричным методом.
 	 *
@@ -25,9 +27,9 @@ export class Provider {
 	 * @type {boolean}
 	 * @memberof Provider
 	 */
-	public get isFactory(): boolean {
-		return this.useFactory !== undefined;
-	}
+	// private get isFactory(): boolean {
+	// 	return this.useFactory !== undefined;
+	// }
 
 	/**
 	 * Значение, показывающее, что поставщик не доступен для внедрения как зависимость.
@@ -57,12 +59,26 @@ export class Provider {
 	 *
 	 * @param {TClassConstruct} construct Конструкт поставщика.
 	 * @param {boolean} exportable Значение, показывающее, что поставщик может быть экспортирован в принимающий модуль.
-	 * @param {() => any} [useFactory] Фабричный метод для создания экземпляра поставщика.
 	 * @memberof Provider
 	 */
 	constructor(
 		public readonly construct: TClassConstruct,
-		public readonly exportable: boolean,
-		public readonly useFactory?: () => any
+		public readonly exportable: boolean
 	) {}
+
+	/**
+	 * * experimental => DynamicModule
+	 *
+	 * Создает экземпляр класса Provider.
+	 *
+	 * @param {TClassConstruct} construct Конструкт поставщика.
+	 * @param {boolean} exportable Значение, показывающее, что поставщик может быть экспортирован в принимающий модуль.
+	 * @param {() => any} [useFactory] Фабричный метод для создания экземпляра поставщика.
+	 * @memberof Provider
+	 */
+	// constructor(
+	// 	public readonly construct: TClassConstruct,
+	// 	public readonly exportable: boolean,
+	// 	public readonly useFactory?: () => any
+	// ) {}
 }

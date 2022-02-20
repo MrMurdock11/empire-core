@@ -4,4 +4,7 @@ module.exports = {
 	testEnvironment: "node",
 	testRegex: ["(.*).test.ts"],
 	setupFiles: ["reflect-metadata"],
+	moduleNameMapper: {
+		"@di/(.*)": "<rootDir>/src/di/$1",
+	},
 };

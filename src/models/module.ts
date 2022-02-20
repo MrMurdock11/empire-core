@@ -14,10 +14,10 @@ export class Module {
 	 * Идентификатор модуля.
 	 *
 	 * @private
-	 * @type {Uuid}
+	 * @type {TUuid}
 	 * @memberof Module
 	 */
-	private readonly id: Uuid = v4();
+	private readonly id: TUuid = v4();
 
 	/**
 	 * Значение, показывающее, что модуль определена для глобального области.

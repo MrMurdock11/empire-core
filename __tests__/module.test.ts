@@ -33,7 +33,7 @@ describe("Modules", () => {
 		let submodule: Module;
 
 		beforeAll(() => {
-			provider = new Provider(InnerProvider, false, undefined);
+			provider = new Provider(InnerProvider, false);
 			submodule = Module.create(Submodule, [], [provider]);
 		});
 
@@ -77,7 +77,7 @@ describe("Modules", () => {
 		let module: Module;
 
 		beforeAll(() => {
-			provider = new Provider(InnerProvider, false, undefined);
+			provider = new Provider(InnerProvider, false);
 			module = Module.create(RootModule, [], [provider]);
 		});
 

@@ -11,11 +11,20 @@
 		"declaration": true,
 		"declarationMap": true,
 		"allowJs": true,
-		"outDir": "./dist"
+		"outDir": "./dist",
+		"baseUrl": "./src",
+		"paths": {
+			"__inversify-constants__": ["common/constants.inversify.ts"],
+			"__metadata-constants__": ["common/constants.metadata.ts"],
+			"@di/*": ["di/*"],
+			"@models/*": ["models/*"],
+			"@decorators/*": ["decorators/*"]
+		}
 	},
 	"include": [
-		"src/**/*"
-, "__tests__"	],
+		"src/**/*",
+		"__tests__"
+	],
 	"exclude": [
 		"node_modules",
 	]

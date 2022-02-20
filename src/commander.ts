@@ -1,4 +1,3 @@
-import { isString } from "lodash";
 import { Injector } from "./injector";
 import { ICommand } from "./interfaces/command.interface";
 import { IScanner } from "./scanner";
